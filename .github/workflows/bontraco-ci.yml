@@ -1,0 +1,77 @@
+name: Bontraco CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      preview_url:
+        description: Unique HTTPS Netlify preview URL to test
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bontraco-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: bontraco
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: bontraco/package-lock.json
+      - name: Install exact dependencies
+        run: npm ci
+      - name: Verify application
+        run: npm run verify:release
+      - name: Install browser for acceptance smoke
+        run: npx --yes --package @playwright/cli@0.1.19 playwright-cli install-browser chromium
+      - name: Confirm production bundle rejects sample access
+        run: npm run smoke:browser:auth
+      - name: Build demo-gated acceptance bundle
+        run: VITE_DEMO_MODE=true npm run build
+      - name: Run desktop and mobile browser smoke
+        run: npm run smoke:browser
+
+  role-acceptance:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: bontraco-preview
+    defaults:
+      run:
+        working-directory: bontraco
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.BONTRACO_SUPABASE_URL }}
+      SUPABASE_URL: ${{ secrets.BONTRACO_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.BONTRACO_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.BONTRACO_SUPABASE_SERVICE_ROLE_KEY }}
+      BONTRACO_PREVIEW_URL: ${{ inputs.preview_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: bontraco/package-lock.json
+      - name: Install exact dependencies
+        run: npm ci
+      - name: Run isolated five-role acceptance and cleanup
+        run: npm run smoke:roles:full -- "gha${{ github.run_id }}"

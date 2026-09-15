@@ -1,0 +1,17 @@
+{
+  "name": "bontraco-repository",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix bontraco run dev",
+    "build": "npm --prefix bontraco run build",
+    "preflight:production": "npm --prefix bontraco run preflight:production",
+    "smoke:roles": "npm --prefix bontraco run smoke:roles --",
+    "smoke:roles:full": "npm --prefix bontraco run smoke:roles:full --",
+    "smoke:browser": "npm --prefix bontraco run smoke:browser --",
+    "smoke:browser:auth": "npm --prefix bontraco run smoke:browser:auth --",
+    "test": "npm --prefix bontraco run test",
+    "verify": "npm --prefix bontraco run verify",
+    "verify:release": "npm --prefix bontraco run verify:release"
+  }
+}

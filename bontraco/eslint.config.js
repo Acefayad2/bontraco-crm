@@ -1,0 +1,20 @@
+import eslint from "@eslint/js";
+import reactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist", "coverage", "vite.config.js", "vite.config.d.ts"] },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+  reactHooks.configs.flat.recommended,
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: { globals: globals.browser },
+    rules: { "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }] },
+  },
+  {
+    files: ["netlify/functions/**/*.mjs"],
+    languageOptions: { globals: { ...globals.node, Netlify: "readonly" } },
+  },
+);

@@ -1,0 +1,13 @@
+# Local Netlify folder
+.netlify
+
+# Local browser test artifacts
+.playwright-cli
+
+# Dependencies
+node_modules
+bontraco/node_modules
+bontraco/dist
+bontraco/.env.local
+bontraco/*.tsbuildinfo
+work

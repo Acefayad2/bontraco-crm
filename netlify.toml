@@ -1,0 +1,47 @@
+[build]
+  base = "bontraco"
+  command = "npm run build"
+  publish = "bontraco/dist"
+
+[functions]
+  directory = "bontraco/netlify/functions"
+  node_bundler = "esbuild"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+[context.deploy-preview.environment]
+  VITE_DEMO_MODE = "true"
+
+[context.production]
+  command = "npm run preflight:production && npm run build"
+
+[context.production.environment]
+  VITE_DEMO_MODE = "false"
+  ACCOUNT_PURGE_ENABLED = "false"
+
+[[redirects]]
+  from = "/assets/*"
+  to = "/index.html"
+  status = 404
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self'"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
